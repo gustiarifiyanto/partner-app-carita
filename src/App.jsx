@@ -23,6 +23,8 @@ import ClientRegisterPage from './pages/ClientRegisterPage'
 import OrderEntryPage from './pages/OrderEntryPage'
 import ClientCreateOrderPage from './pages/client/CreateOrderPage'
 import ClientOrderDetailPage from './pages/client/OrderDetailPage'
+import ClientInvitationDetailPage from './pages/client/InvitationDetailPage'
+import ClientInvitationsPage from './pages/client/InvitationsPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import PartnerCommissionsPage from './pages/partner/CommissionsPage'
@@ -123,6 +125,8 @@ function App() {
           <Route path="katalog" element={<ClientCatalogPage />} />
           <Route path="order/baru" element={<ClientCreateOrderPage />} />
           <Route path="orders/:id" element={<ClientOrderDetailPage />} />
+          <Route path="undangan" element={<ClientInvitationsPage />} />
+          <Route path="undangan/:id" element={<ClientInvitationDetailPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

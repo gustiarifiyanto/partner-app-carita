@@ -136,6 +136,21 @@ export default function ClientOrderDetailPage() {
 
       <OrderTimeline order={order} />
 
+      {order.package_id && order.status !== 'cancelled' && (
+        <Link
+          to={`/client/undangan/${order.id}`}
+          className="animate-fade-up group flex items-center justify-between gap-3 rounded-2xl bg-violet-50 p-5 ring-1 ring-violet-200 transition hover:bg-violet-100"
+        >
+          <div>
+            <p className="text-sm font-semibold text-violet-900">💌 Data Undangan</p>
+            <p className="mt-0.5 text-sm text-violet-800">
+              Isi data mempelai & acara supaya undangan bisa dikerjakan.
+            </p>
+          </div>
+          <span className="shrink-0 text-sm font-semibold text-violet-700 group-hover:underline">Buka →</span>
+        </Link>
+      )}
+
       <section className="animate-fade-up space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-base font-semibold text-slate-900">Pembayaran</h2>

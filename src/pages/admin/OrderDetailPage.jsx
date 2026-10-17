@@ -23,6 +23,7 @@ import { usePageHeader } from '../../hooks/usePageHeader'
 import { useToast } from '../../hooks/useToast'
 import { ORDER_SOURCES } from '../../lib/orderSources'
 import PaymentReviewActions from '../../components/admin/PaymentReviewActions'
+import InvitationDataPanel from '../../components/admin/InvitationDataPanel'
 import { PaymentHistory } from '../../components/payments/PaymentParts'
 
 const EDIT_FIELDS = [
@@ -146,6 +147,8 @@ export default function OrderDetailPage() {
   const approveViaPayment = payments.length > 0 && !payments.some((p) => p.status === 'paid')
   const commissionRate = Number(order.partner?.commission_rate ?? 0)
   const estimatedCommission = order.partner ? (Number(order.order_amount) * commissionRate) / 100 : 0
+  // Order katalog baru bisa diselesaikan setelah client mengirim data undangan.
+  const waitingInvitationData = ['choose_mode', 'waiting_data'].includes(order.invitation_data_status)
 
   return (
     <div className="space-y-6">
@@ -208,8 +211,13 @@ export default function OrderDetailPage() {
               </>
             )}
             {order.status === 'confirmed' && (
-              <HeroButton onClick={() => setConfirmAction('complete')} disabled={busy} primary>
-                Selesaikan Order
+              <HeroButton
+                onClick={() => setConfirmAction('complete')}
+                disabled={busy || waitingInvitationData}
+                primary
+                title={waitingInvitationData ? 'Menunggu client mengirim data undangan' : undefined}
+              >
+                {waitingInvitationData ? 'Menunggu Data Client' : 'Selesaikan Order'}
               </HeroButton>
             )}
             {['awaiting_payment', 'pending_approval', 'confirmed'].includes(order.status) && (
@@ -231,6 +239,8 @@ export default function OrderDetailPage() {
       )}
 
       <OrderTimeline order={order} />
+
+      <InvitationDataPanel order={order} onChanged={load} />
 
       {payments.length > 0 && (
         <section className="animate-fade-up space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
@@ -433,7 +443,7 @@ function SummaryRow({ label, value, highlight }) {
   )
 }
 
-function HeroButton({ children, onClick, disabled, primary, danger, active }) {
+function HeroButton({ children, onClick, disabled, primary, danger, active, title }) {
   const style = primary
     ? 'bg-white text-indigo-700 shadow-md hover:shadow-lg'
     : danger
@@ -447,6 +457,7 @@ function HeroButton({ children, onClick, disabled, primary, danger, active }) {
       type="button"
       onClick={onClick}
       disabled={disabled}
+      title={title}
       className={`rounded-lg px-3.5 py-2 text-sm font-semibold backdrop-blur-sm transition duration-200 hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 ${style}`}
     >
       {children}

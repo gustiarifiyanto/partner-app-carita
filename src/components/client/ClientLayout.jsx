@@ -1,5 +1,5 @@
 import DashboardLayout from '../DashboardLayout'
-import { CatalogIcon, DashboardIcon } from '../icons/NavIcons'
+import { CatalogIcon, DashboardIcon, InvitationIcon } from '../icons/NavIcons'
 
 export default function ClientLayout() {
   const navItems = [
@@ -8,6 +8,12 @@ export default function ClientLayout() {
       label: 'Pesanan Saya',
       end: true,
       icon: <DashboardIcon />,
+    },
+    {
+      to: '/client/undangan',
+      label: 'Undangan Saya',
+      end: false,
+      icon: <InvitationIcon />,
     },
     {
       to: '/client/katalog',
