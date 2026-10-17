@@ -1,56 +1,71 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
-import welcomeAnimation from '../assets/lottie/welcome_partner.json'
-import logo from '../assets/logo/logo_carita_v4.png'
-import LottiePlayer from '../components/LottiePlayer'
-import { useAuth } from '../hooks/useAuth'
-import { useToast } from '../hooks/useToast'
-import api from '../lib/api'
-import { AVATAR_OPTIONS } from '../lib/avatarOptions'
-import { homePathForRole } from '../lib/roles'
+import { useEffect, useRef, useState } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import welcomeAnimation from "../assets/lottie/welcome_partner.json";
+import logo from "../assets/logo/logo_carita_v4.png";
+import LottiePlayer from "../components/LottiePlayer";
+import { useAuth } from "../hooks/useAuth";
+import { useToast } from "../hooks/useToast";
+import api from "../lib/api";
+import { AVATAR_OPTIONS } from "../lib/avatarOptions";
+import { homePathForRole } from "../lib/roles";
 
 const BENEFITS = [
-  'Pantau order & komisi kapan saja',
-  'Proses verifikasi cepat oleh admin',
-  'Kelola profil bisnis kamu sendiri',
-]
+  "Pantau order & komisi kapan saja",
+  "Proses verifikasi cepat oleh admin",
+  "Kelola profil bisnis kamu sendiri",
+];
 
 const INITIAL_FORM = {
-  name: '',
-  company_name: '',
-  email: '',
-  phone: '',
-  city: '',
-  address: '',
-  referral_source: '',
-  password: '',
-  password_confirmation: '',
-  avatar: AVATAR_OPTIONS[0]?.id ?? '',
-}
+  name: "",
+  company_name: "",
+  email: "",
+  phone: "",
+  city: "",
+  address: "",
+  referral_source: "",
+  password: "",
+  password_confirmation: "",
+  avatar: AVATAR_OPTIONS[0]?.id ?? "",
+};
 
 function inputClass(hasError) {
   return `w-full rounded-lg border py-2.5 px-3 text-sm text-slate-900 transition focus:outline-none focus:ring-2 ${
     hasError
-      ? 'border-red-400 focus:border-red-500 focus:ring-red-500/30'
-      : 'border-slate-300 focus:border-violet-500 focus:ring-violet-500/30'
-  }`
+      ? "border-red-400 focus:border-red-500 focus:ring-red-500/30"
+      : "border-slate-300 focus:border-violet-500 focus:ring-violet-500/30"
+  }`;
 }
 
-function Field({ label, error, hint, required, delay = 0, children, className = '' }) {
+function Field({
+  label,
+  error,
+  hint,
+  required,
+  delay = 0,
+  children,
+  className = "",
+}) {
   return (
-    <div className={`animate-fade-up ${className}`} style={{ animationDelay: `${delay}ms` }}>
+    <div
+      className={`animate-fade-up ${className}`}
+      style={{ animationDelay: `${delay}ms` }}
+    >
       <label className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
         {required && <span className="text-red-500"> *</span>}
       </label>
       {children}
-      {error && <p className="mt-1 text-xs text-red-600">{Array.isArray(error) ? error[0] : error}</p>}
+      {error && (
+        <p className="mt-1 text-xs text-red-600">
+          {Array.isArray(error) ? error[0] : error}
+        </p>
+      )}
       {!error && hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
     </div>
-  )
+  );
 }
 
-function IconInput({ icon, className = '', ...props }) {
+function IconInput({ icon, className = "", ...props }) {
   return (
     <div className="group relative">
       <svg
@@ -64,23 +79,24 @@ function IconInput({ icon, className = '', ...props }) {
       </svg>
       <input {...props} className={`${className} pl-10`} />
     </div>
-  )
+  );
 }
 
 function AvatarDropdown({ value, onChange, error }) {
-  const [open, setOpen] = useState(false)
-  const containerRef = useRef(null)
-  const selected = AVATAR_OPTIONS.find((a) => a.id === value) ?? AVATAR_OPTIONS[0]
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
+  const selected =
+    AVATAR_OPTIONS.find((a) => a.id === value) ?? AVATAR_OPTIONS[0];
 
   useEffect(() => {
     function handleClickOutside(e) {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setOpen(false)
+        setOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <div className="relative" ref={containerRef}>
@@ -90,24 +106,32 @@ function AvatarDropdown({ value, onChange, error }) {
         aria-expanded={open}
         className={`flex w-full items-center gap-3 rounded-lg border py-2 px-3 text-left text-sm transition focus:outline-none focus:ring-2 ${
           error
-            ? 'border-red-400 focus:border-red-500 focus:ring-red-500/30'
-            : 'border-slate-300 focus:border-violet-500 focus:ring-violet-500/30'
+            ? "border-red-400 focus:border-red-500 focus:ring-red-500/30"
+            : "border-slate-300 focus:border-violet-500 focus:ring-violet-500/30"
         }`}
       >
         {selected ? (
-          <img src={selected.src} alt="" className="h-9 w-9 shrink-0 rounded-full object-cover" />
+          <img
+            src={selected.src}
+            alt=""
+            className="h-9 w-9 shrink-0 rounded-full object-cover"
+          />
         ) : (
           <span className="text-slate-700">Pilih foto profil</span>
         )}
         <span className="flex-1" />
         <svg
-          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
           strokeWidth={2}
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="m19.5 8.25-7.5 7.5-7.5-7.5"
+          />
         </svg>
       </button>
 
@@ -119,27 +143,39 @@ function AvatarDropdown({ value, onChange, error }) {
                 key={avatar.id}
                 type="button"
                 onClick={() => {
-                  onChange(avatar.id)
-                  setOpen(false)
+                  onChange(avatar.id);
+                  setOpen(false);
                 }}
                 aria-label={`Pilih foto profil ${avatar.id}`}
                 aria-pressed={value === avatar.id}
                 className={`aspect-square overflow-hidden rounded-full ring-2 ring-offset-2 transition ${
-                  value === avatar.id ? 'ring-violet-600' : 'ring-transparent hover:ring-slate-300'
+                  value === avatar.id
+                    ? "ring-violet-600"
+                    : "ring-transparent hover:ring-slate-300"
                 }`}
               >
-                <img src={avatar.src} alt="" className="h-full w-full object-cover" />
+                <img
+                  src={avatar.src}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
               </button>
             ))}
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }
 
 const ICONS = {
-  user: <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />,
+  user: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+    />
+  ),
   building: (
     <path
       strokeLinecap="round"
@@ -166,7 +202,11 @@ const ICONS = {
   ),
   mapPin: (
     <>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+      />
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -188,7 +228,11 @@ const ICONS = {
         strokeLinejoin="round"
         d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"
       />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6Z" />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6 6h.008v.008H6V6Z"
+      />
     </>
   ),
   lock: (
@@ -198,74 +242,91 @@ const ICONS = {
       d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a1.5 1.5 0 0 0 1.5-1.5v-8.25a1.5 1.5 0 0 0-1.5-1.5H6.75a1.5 1.5 0 0 0-1.5 1.5v8.25a1.5 1.5 0 0 0 1.5 1.5Z"
     />
   ),
-}
+};
 
 export default function RegisterPage() {
-  const { user, token, loading: authLoading, login } = useAuth()
-  const toast = useToast()
-  const navigate = useNavigate()
+  const { user, token, loading: authLoading, login } = useAuth();
+  const toast = useToast();
+  const navigate = useNavigate();
 
-  const [form, setForm] = useState(INITIAL_FORM)
-  const [errors, setErrors] = useState({})
-  const [generalError, setGeneralError] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  const [form, setForm] = useState(INITIAL_FORM);
+  const [errors, setErrors] = useState({});
+  const [generalError, setGeneralError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   if (!authLoading && token && user) {
-    return <Navigate to={homePathForRole(user.role)} replace />
+    return <Navigate to={homePathForRole(user.role)} replace />;
   }
 
   const handleChange = (field) => (e) => {
-    setForm((prev) => ({ ...prev, [field]: e.target.value }))
-  }
+    setForm((prev) => ({ ...prev, [field]: e.target.value }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setErrors({})
-    setGeneralError('')
-    setSubmitting(true)
+    e.preventDefault();
+    setErrors({});
+    setGeneralError("");
+    setSubmitting(true);
 
     try {
-      const payload = { ...form }
-      if (!payload.referral_source) delete payload.referral_source
+      const payload = { ...form };
+      if (!payload.referral_source) delete payload.referral_source;
 
-      await api.post('/auth/register', payload)
-      toast.success('Registrasi berhasil! Selamat datang di Carita Studio.')
+      await api.post("/auth/register", payload);
+      toast.success("Registrasi berhasil! Selamat datang di Carita Studio.");
 
-      sessionStorage.setItem('justRegistered', '1')
-      await login(form.email, form.password)
-      navigate('/partner', { replace: true })
+      sessionStorage.setItem("justRegistered", "1");
+      await login(form.email, form.password);
+      navigate("/partner", { replace: true });
     } catch (err) {
       if (err.response?.status === 422) {
-        setErrors(err.response.data.errors || {})
+        setErrors(err.response.data.errors || {});
       } else {
-        setGeneralError(err.response?.data?.message || 'Registrasi gagal, silakan coba lagi.')
+        setGeneralError(
+          err.response?.data?.message || "Registrasi gagal, silakan coba lagi.",
+        );
       }
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 lg:h-screen lg:flex-row lg:overflow-hidden">
       <div
         className="relative hidden items-center justify-center overflow-hidden px-10 lg:flex lg:h-full lg:w-1/2"
-        style={{ backgroundImage: 'linear-gradient(135deg, #3B82F6 0%, #2563EB 60%, #1D4ED8 100%)' }}
+        style={{
+          backgroundImage:
+            "linear-gradient(135deg, #3B82F6 0%, #2563EB 60%, #1D4ED8 100%)",
+        }}
       >
         <div
           className="animate-blob absolute -top-20 -left-20 h-96 w-96 rounded-full blur-3xl"
-          style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}
+          style={{ backgroundColor: "rgba(255,255,255,0.12)" }}
         />
         <div
           className="animate-blob absolute -right-14 -bottom-20 h-80 w-80 rounded-full blur-3xl"
-          style={{ backgroundColor: 'rgba(191,219,254,0.25)', animationDelay: '3s' }}
+          style={{
+            backgroundColor: "rgba(191,219,254,0.25)",
+            animationDelay: "3s",
+          }}
         />
 
         <div className="relative z-10 w-full max-w-md text-center">
-          <LottiePlayer animationData={welcomeAnimation} className="mx-auto w-full max-w-sm" />
-          <h2 className="animate-fade-up mt-6 text-2xl font-semibold text-white">Bergabung Jadi Partner</h2>
-          <p className="animate-fade-up mt-3 text-sm text-blue-100" style={{ animationDelay: '80ms' }}>
-            Daftarkan bisnis kamu dan mulai kelola kemitraan dengan Carita Studio.
+          <LottiePlayer
+            animationData={welcomeAnimation}
+            className="mx-auto w-full max-w-sm"
+          />
+          <h2 className="animate-fade-up mt-6 text-2xl font-semibold text-white">
+            Bergabung Jadi Partner
+          </h2>
+          <p
+            className="animate-fade-up mt-3 text-sm text-blue-100"
+            style={{ animationDelay: "80ms" }}
+          >
+            Daftarkan bisnis kamu dan mulai kelola kemitraan dengan Carita
+            Studio.
           </p>
 
           <ul className="mt-8 flex flex-col gap-2.5 text-left">
@@ -276,8 +337,18 @@ export default function RegisterPage() {
                 style={{ animationDelay: `${140 + i * 90}ms` }}
               >
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-blue-600 shadow-sm">
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  <svg
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 13l4 4L19 7"
+                    />
                   </svg>
                 </span>
                 {item}
@@ -289,16 +360,28 @@ export default function RegisterPage() {
 
       <div className="flex w-full flex-1 items-center justify-center px-4 py-10 lg:h-full lg:w-1/2 lg:items-start lg:overflow-y-auto">
         <div className="animate-card-in my-auto w-full max-w-lg rounded-2xl bg-white p-8 shadow-xl ring-1 ring-slate-200 sm:p-10">
-          <img src={logo} alt="Carita Studio" className="mx-auto mb-6 h-16 w-16 object-contain" />
+          <img
+            src={logo}
+            alt="Carita Studio"
+            className="mx-auto mb-6 h-16 w-16 object-contain"
+          />
 
-          <h1 className="text-center text-xl font-semibold text-slate-900 lg:text-left">Daftar Sebagai Partner</h1>
+          <h1 className="text-center text-xl font-semibold text-slate-900 lg:text-left">
+            Daftar Sebagai Partner
+          </h1>
           <p className="mt-1 text-center text-sm text-slate-500 lg:text-left">
             Lengkapi data berikut untuk membuat akun partner baru
           </p>
 
           {generalError && (
             <div className="animate-error-in mt-5 flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2.5 text-sm text-red-600">
-              <svg className="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <svg
+                className="mt-0.5 h-4 w-4 shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -311,20 +394,30 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Nama Lengkap" error={errors.name} required delay={0}>
+              <Field
+                label="Nama Lengkap"
+                error={errors.name}
+                required
+                delay={0}
+              >
                 <IconInput
                   icon={ICONS.user}
                   value={form.name}
-                  onChange={handleChange('name')}
+                  onChange={handleChange("name")}
                   className={inputClass(errors.name)}
                   required
                 />
               </Field>
-              <Field label="Nama Bisnis/Brand" error={errors.company_name} required delay={40}>
+              <Field
+                label="Nama Bisnis/Brand"
+                error={errors.company_name}
+                required
+                delay={40}
+              >
                 <IconInput
                   icon={ICONS.building}
                   value={form.company_name}
-                  onChange={handleChange('company_name')}
+                  onChange={handleChange("company_name")}
                   className={inputClass(errors.company_name)}
                   required
                 />
@@ -340,7 +433,9 @@ export default function RegisterPage() {
             >
               <AvatarDropdown
                 value={form.avatar}
-                onChange={(avatarId) => setForm((prev) => ({ ...prev, avatar: avatarId }))}
+                onChange={(avatarId) =>
+                  setForm((prev) => ({ ...prev, avatar: avatarId }))
+                }
                 error={errors.avatar}
               />
             </Field>
@@ -351,9 +446,9 @@ export default function RegisterPage() {
                   icon={ICONS.mail}
                   type="email"
                   value={form.email}
-                  onChange={handleChange('email')}
+                  onChange={handleChange("email")}
                   className={inputClass(errors.email)}
-                  placeholder="nama@perusahaan.com"
+                  placeholder="nama@gmail.com"
                   required
                 />
               </Field>
@@ -362,7 +457,7 @@ export default function RegisterPage() {
                   icon={ICONS.phone}
                   type="tel"
                   value={form.phone}
-                  onChange={handleChange('phone')}
+                  onChange={handleChange("phone")}
                   className={inputClass(errors.phone)}
                   placeholder="08xxxxxxxxxx"
                   required
@@ -375,7 +470,7 @@ export default function RegisterPage() {
                 <IconInput
                   icon={ICONS.mapPin}
                   value={form.city}
-                  onChange={handleChange('city')}
+                  onChange={handleChange("city")}
                   className={inputClass(errors.city)}
                   required
                 />
@@ -389,25 +484,35 @@ export default function RegisterPage() {
                 <IconInput
                   icon={ICONS.tag}
                   value={form.referral_source}
-                  onChange={handleChange('referral_source')}
+                  onChange={handleChange("referral_source")}
                   className={inputClass(errors.referral_source)}
                   placeholder="Instagram, teman, dll."
                 />
               </Field>
             </div>
 
-            <Field label="Alamat Lengkap" error={errors.address} required delay={240}>
+            <Field
+              label="Alamat Lengkap"
+              error={errors.address}
+              required
+              delay={240}
+            >
               <textarea
                 rows={2}
                 value={form.address}
-                onChange={handleChange('address')}
+                onChange={handleChange("address")}
                 className={inputClass(errors.address)}
                 required
               />
             </Field>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field label="Password" error={errors.password} required delay={280}>
+              <Field
+                label="Password"
+                error={errors.password}
+                required
+                delay={280}
+              >
                 <div className="group relative">
                   <svg
                     className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-violet-500"
@@ -419,9 +524,9 @@ export default function RegisterPage() {
                     {ICONS.lock}
                   </svg>
                   <input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     value={form.password}
-                    onChange={handleChange('password')}
+                    onChange={handleChange("password")}
                     className={`${inputClass(errors.password)} pr-10 pl-10`}
                     placeholder="Minimal 8 karakter"
                     required
@@ -430,10 +535,20 @@ export default function RegisterPage() {
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
                     className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                    aria-label={
+                      showPassword
+                        ? "Sembunyikan password"
+                        : "Tampilkan password"
+                    }
                   >
                     {showPassword ? (
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.75}
+                      >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -441,13 +556,23 @@ export default function RegisterPage() {
                         />
                       </svg>
                     ) : (
-                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                      <svg
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.75}
+                      >
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
                         />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                        />
                       </svg>
                     )}
                   </button>
@@ -456,9 +581,9 @@ export default function RegisterPage() {
               <Field label="Konfirmasi Password" required delay={320}>
                 <IconInput
                   icon={ICONS.lock}
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={form.password_confirmation}
-                  onChange={handleChange('password_confirmation')}
+                  onChange={handleChange("password_confirmation")}
                   className={inputClass(false)}
                   required
                 />
@@ -469,11 +594,25 @@ export default function RegisterPage() {
               type="submit"
               disabled={submitting}
               className="animate-fade-up flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:shadow-[0_8px_24px_rgba(109,40,217,0.35)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-              style={{ backgroundImage: 'linear-gradient(135deg, #4c1d95, #6d28d9)', animationDelay: '360ms' }}
+              style={{
+                backgroundImage: "linear-gradient(135deg, #4c1d95, #6d28d9)",
+                animationDelay: "360ms",
+              }}
             >
               {submitting && (
-                <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={4} />
+                <svg
+                  className="h-4 w-4 animate-spin"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth={4}
+                  />
                   <path
                     className="opacity-75"
                     fill="currentColor"
@@ -481,12 +620,18 @@ export default function RegisterPage() {
                   />
                 </svg>
               )}
-              {submitting ? 'Memproses...' : 'Daftar Sekarang'}
+              {submitting ? "Memproses..." : "Daftar Sekarang"}
             </button>
 
-            <p className="animate-fade-up text-center text-sm text-slate-500" style={{ animationDelay: '400ms' }}>
-              Sudah punya akun?{' '}
-              <Link to="/login" className="font-medium text-violet-600 hover:text-violet-700 hover:underline">
+            <p
+              className="animate-fade-up text-center text-sm text-slate-500"
+              style={{ animationDelay: "400ms" }}
+            >
+              Sudah punya akun?{" "}
+              <Link
+                to="/login"
+                className="font-medium text-violet-600 hover:text-violet-700 hover:underline"
+              >
                 Masuk di sini
               </Link>
             </p>
@@ -494,5 +639,5 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import CopyButton from '../CopyButton'
 import FormField from '../FormField'
 import { fieldClass } from '../../lib/formStyles'
+import { buildWaLinkTo, paymentRequestMessage } from '../../lib/contact'
 import { formatCurrency, formatDate } from '../../lib/format'
 
 // Bagian-bagian pembayaran transfer manual yang dipakai client, partner, dan admin.
@@ -56,6 +57,52 @@ export function BankAccountsInfo({ paymentInfo, amount, note }) {
         ))
       )}
       {note && <p className="text-xs text-slate-500">{note}</p>}
+    </div>
+  )
+}
+
+// Pratinjau pesan tagihan untuk client + tombol salin / kirim via WA.
+// Baru muncul setelah paket & tema dipilih dan rekening sudah ada.
+export function PaymentRequestMessage({ paymentInfo, customerName, customerPhone, pkg, theme, proofRecipient }) {
+  const accounts = paymentInfo.bank_accounts || []
+  if (!pkg || !theme || accounts.length === 0) {
+    return (
+      <p className="rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500 ring-1 ring-slate-200">
+        Pilih paket & tema dulu untuk membuat pesan tagihan yang bisa dikirim ke client.
+      </p>
+    )
+  }
+
+  const message = paymentRequestMessage({
+    customerName: customerName.trim(),
+    pkg,
+    theme,
+    amount: pkg.price,
+    accounts,
+    proofRecipient,
+  })
+
+  return (
+    <div className="space-y-2 rounded-lg bg-emerald-50/60 p-3 ring-1 ring-emerald-200">
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-semibold text-emerald-800">Pesan untuk Client</p>
+        <div className="flex gap-1.5">
+          {customerPhone.trim() && (
+            <a
+              href={buildWaLinkTo(customerPhone, message)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center rounded-md bg-emerald-600 px-2 py-1 text-xs font-semibold text-white shadow-sm hover:bg-emerald-700"
+            >
+              Kirim via WA
+            </a>
+          )}
+          <CopyButton text={message} label="Salin Pesan" successMessage="Pesan tagihan disalin." variant="light" />
+        </div>
+      </div>
+      <p className="max-h-48 overflow-y-auto rounded-lg rounded-tl-none bg-white px-3 py-2 text-xs leading-relaxed whitespace-pre-wrap text-slate-700 shadow-sm ring-1 ring-slate-200">
+        {message}
+      </p>
     </div>
   )
 }

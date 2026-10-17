@@ -126,7 +126,11 @@ export default function CreatePartnerModal({ open, onClose, onCreated }) {
           <legend className="mb-1 text-xs font-semibold tracking-wide text-slate-400 uppercase">
             Perusahaan
           </legend>
-          <FormField label="Nama Perusahaan" error={errors.company_name}>
+          <FormField
+            label="Nama Perusahaan"
+            error={errors.company_name}
+            hint='Nama ini yang tampil ke client saat memakai kode referral partner, mis. "Kode dari Carita Studio".'
+          >
             <input
               value={form.company_name}
               onChange={handleChange('company_name')}

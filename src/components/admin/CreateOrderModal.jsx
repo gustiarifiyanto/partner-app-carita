@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react'
 import CatalogPicker from '../catalog/CatalogPicker'
 import FormField from '../FormField'
 import Modal from '../Modal'
-import { PaymentProofFields } from '../payments/PaymentParts'
+import { BankAccountsInfo, PaymentProofFields, PaymentRequestMessage } from '../payments/PaymentParts'
 import api from '../../lib/api'
 import { toFormData } from '../../lib/formData'
 import { fieldClass } from '../../lib/formStyles'
 import { useCatalog } from '../../hooks/useCatalog'
+import { usePaymentInfo } from '../../hooks/usePaymentInfo'
 import { useToast } from '../../hooks/useToast'
 
 const INITIAL_FORM = {
@@ -29,7 +30,10 @@ const INITIAL_FORM = {
 export default function CreateOrderModal({ open, onClose, onCreated }) {
   const toast = useToast()
   const catalog = useCatalog(open)
+  const paymentInfo = usePaymentInfo(open)
   const [form, setForm] = useState(INITIAL_FORM)
+  const selectedPackage = catalog.packages.find((p) => String(p.id) === String(form.package_id))
+  const selectedTheme = catalog.themes.find((t) => String(t.id) === String(form.theme_id))
   const [errors, setErrors] = useState({})
   const [generalError, setGeneralError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -149,6 +153,24 @@ export default function CreateOrderModal({ open, onClose, onCreated }) {
             ))}
           </select>
         </FormField>
+
+        <div className="space-y-3 rounded-xl border border-slate-200 p-3">
+          <div>
+            <p className="text-sm font-semibold text-slate-900">Tagihan ke Client</p>
+            <p className="mt-0.5 text-xs text-slate-500">
+              Salin pesan ini dan kirim ke client supaya transfer ke rekening admin.
+            </p>
+          </div>
+          <BankAccountsInfo paymentInfo={paymentInfo} amount={selectedPackage?.price} />
+          <PaymentRequestMessage
+            paymentInfo={paymentInfo}
+            customerName={form.customer_name}
+            customerPhone={form.customer_phone}
+            pkg={selectedPackage}
+            theme={selectedTheme}
+            proofRecipient="kami (Admin Carita Studio)"
+          />
+        </div>
 
         <div className="space-y-3 rounded-xl border border-slate-200 p-3">
           <div>

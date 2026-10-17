@@ -86,20 +86,20 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 lg:flex-row">
+    <div className="flex min-h-screen flex-col bg-slate-50 lg:h-screen lg:flex-row lg:overflow-hidden">
       <div
-        className="relative hidden items-center justify-center overflow-hidden px-10 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-1/2 lg:self-start"
+        className="relative hidden items-center justify-center overflow-hidden px-10 lg:flex lg:h-full lg:w-1/2"
         style={{
           backgroundImage:
             "linear-gradient(135deg, #3B82F6 0%, #2563EB 60%, #1D4ED8 100%)",
         }}
       >
         <div
-          className="animate-blob absolute -top-20 -left-20 h-96 w-96 rounded-full blur-3xl"
+          className="animate-blob absolute -top-20 -left-20 h-96 w-96 rounded-full blur-3xl will-change-transform"
           style={{ backgroundColor: "rgba(255,255,255,0.12)" }}
         />
         <div
-          className="animate-blob absolute -right-14 -bottom-20 h-80 w-80 rounded-full blur-3xl"
+          className="animate-blob absolute -right-14 -bottom-20 h-80 w-80 rounded-full blur-3xl will-change-transform"
           style={{
             backgroundColor: "rgba(191,219,254,0.25)",
             animationDelay: "3s",
@@ -147,8 +147,8 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="flex w-full flex-1 items-center justify-center px-4 py-10 lg:w-1/2">
-        <div className="animate-card-in w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl ring-1 ring-slate-200 sm:p-10">
+      <div className="flex w-full flex-1 overflow-y-auto overscroll-contain px-4 py-10 lg:w-1/2">
+        <div className="animate-card-in m-auto w-full max-w-sm rounded-2xl bg-white p-8 shadow-xl ring-1 ring-slate-200 sm:p-10">
           <img
             src={logo}
             alt="Carita Studio"

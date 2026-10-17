@@ -1,6 +1,7 @@
 import FormField from '../FormField'
 import { fieldClass } from '../../lib/formStyles'
 import { formatCurrency } from '../../lib/format'
+import ThemeDemoButton from './ThemeDemoButton'
 
 // Pilih paket + tema dalam bentuk dropdown (dipakai form order partner & client).
 // Harga hanya ditampilkan; server tetap menghitung harga dari paket.
@@ -74,14 +75,13 @@ export default function CatalogPicker({ catalog, packageId, themeId, onChange, e
             </p>
           </div>
           {selectedTheme?.demo_url && (
-            <a
-              href={selectedTheme.demo_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 text-xs font-medium text-violet-600 hover:underline"
-            >
-              Lihat Demo
-            </a>
+            <div className="shrink-0">
+              <ThemeDemoButton
+                theme={selectedTheme}
+                align="right"
+                className="text-xs font-medium text-violet-600 hover:underline"
+              />
+            </div>
           )}
         </div>
       )}

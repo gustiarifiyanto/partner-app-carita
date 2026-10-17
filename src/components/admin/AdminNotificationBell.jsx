@@ -43,7 +43,7 @@ const COLUMNS = [
   {
     key: 'new_orders',
     title: 'Order Baru',
-    empty: 'Tidak ada order baru dari partner.',
+    empty: 'Tidak ada order baru dari partner atau client.',
     accent: 'bg-violet-100 text-violet-600',
     countClass: 'bg-violet-500',
     seeAll: '/admin/orders',
@@ -52,7 +52,11 @@ const COLUMNS = [
       id: order.id,
       partner: order.partner,
       title: `${order.order_number} · ${formatCurrency(order.order_amount)}`,
-      subtitle: `${order.partner?.company_name ?? '-'} · ${order.customer_name}`,
+      // Order client: belum dibayar; partner (kalau ada) dari kode referral.
+      subtitle:
+        order.source === 'client'
+          ? `Client · ${order.customer_name} · menunggu pembayaran`
+          : `${order.partner?.company_name ?? '-'} · ${order.customer_name}`,
       time: order.created_at,
       href: `/admin/orders/${order.id}`,
     }),

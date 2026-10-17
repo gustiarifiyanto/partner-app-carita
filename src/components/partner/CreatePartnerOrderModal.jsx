@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import CatalogPicker from '../catalog/CatalogPicker'
-import { BankAccountsInfo, PaymentProofFields } from '../payments/PaymentParts'
+import { BankAccountsInfo, PaymentProofFields, PaymentRequestMessage } from '../payments/PaymentParts'
 import FormField from '../FormField'
 import Modal from '../Modal'
 import api from '../../lib/api'
@@ -9,6 +9,7 @@ import { useCatalog } from '../../hooks/useCatalog'
 import { usePaymentInfo } from '../../hooks/usePaymentInfo'
 import { toFormData } from '../../lib/formData'
 import { useToast } from '../../hooks/useToast'
+import { useAuth } from '../../hooks/useAuth'
 
 const INITIAL_FORM = {
   customer_name: '',
@@ -25,11 +26,13 @@ const INITIAL_FORM = {
 
 export default function CreatePartnerOrderModal({ open, onClose, onCreated }) {
   const toast = useToast()
+  const { user } = useAuth()
   // Katalog baru dimuat saat modal pertama kali dibuka.
   const catalog = useCatalog(open)
   const paymentInfo = usePaymentInfo(open)
   const [form, setForm] = useState(INITIAL_FORM)
   const selectedPackage = catalog.packages.find((p) => String(p.id) === String(form.package_id))
+  const selectedTheme = catalog.themes.find((t) => String(t.id) === String(form.theme_id))
   const [errors, setErrors] = useState({})
   const [generalError, setGeneralError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -135,6 +138,14 @@ export default function CreatePartnerOrderModal({ open, onClose, onCreated }) {
             </p>
           </div>
           <BankAccountsInfo paymentInfo={paymentInfo} amount={selectedPackage?.price} />
+          <PaymentRequestMessage
+            paymentInfo={paymentInfo}
+            customerName={form.customer_name}
+            customerPhone={form.customer_phone}
+            pkg={selectedPackage}
+            theme={selectedTheme}
+            proofRecipient={`saya (${user?.partner?.company_name || user?.name})`}
+          />
           <PaymentProofFields
             value={form}
             onChange={(patch) => setForm((prev) => ({ ...prev, ...patch }))}

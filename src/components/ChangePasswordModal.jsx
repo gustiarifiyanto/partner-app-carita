@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import FormField from './FormField'
 import Modal from './Modal'
+import PasswordInput from './PasswordInput'
 import api from '../lib/api'
 import { fieldClass } from '../lib/formStyles'
 import { useToast } from '../hooks/useToast'
@@ -64,8 +65,7 @@ export default function ChangePasswordModal({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <FormField label={oldPasswordLabel} error={errors.old_password}>
-          <input
-            type="password"
+          <PasswordInput
             value={form.old_password}
             onChange={(e) => setForm((prev) => ({ ...prev, old_password: e.target.value }))}
             className={fieldClass(errors.old_password)}
@@ -73,8 +73,7 @@ export default function ChangePasswordModal({
         </FormField>
 
         <FormField label="Password Baru" error={errors.new_password} hint="Minimal 8 karakter">
-          <input
-            type="password"
+          <PasswordInput
             value={form.new_password}
             onChange={(e) => setForm((prev) => ({ ...prev, new_password: e.target.value }))}
             className={fieldClass(errors.new_password)}
@@ -82,8 +81,7 @@ export default function ChangePasswordModal({
         </FormField>
 
         <FormField label="Konfirmasi Password Baru" error={errors.new_password_confirmation}>
-          <input
-            type="password"
+          <PasswordInput
             value={form.new_password_confirmation}
             onChange={(e) =>
               setForm((prev) => ({

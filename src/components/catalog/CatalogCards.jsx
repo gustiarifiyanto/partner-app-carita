@@ -1,4 +1,5 @@
 import { formatCurrency } from '../../lib/format'
+import ThemeDemoButton from './ThemeDemoButton'
 
 // Persen hemat dari harga coret, dibulatkan (mis. 175rb -> 75rb = 57%).
 function discountPercent(pkg) {
@@ -74,15 +75,16 @@ export function PackageCard({ pkg, selected = false, onSelect, footer }) {
   )
 }
 
-// Kartu tema: thumbnail, nama, tombol Lihat Demo (tab baru) dan Pilih.
+// Kartu tema: thumbnail, nama, tombol Lihat Demo (preview / tab baru) dan Pilih.
+// Kartu sengaja tanpa overflow-hidden supaya menu Lihat Demo tidak terpotong.
 export function ThemeCard({ theme, selected = false, onSelect, footer }) {
   return (
     <div
-      className={`flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 transition ${
+      className={`flex flex-col rounded-xl bg-white shadow-sm ring-1 transition ${
         selected ? 'ring-2 ring-violet-500' : 'ring-slate-200 hover:shadow-md'
       } ${theme.is_active === false ? 'opacity-60' : ''}`}
     >
-      <div className="aspect-[3/4] overflow-hidden bg-slate-100">
+      <div className="aspect-[3/4] overflow-hidden rounded-t-xl bg-slate-100">
         {theme.thumbnail ? (
           <img src={theme.thumbnail} alt={theme.name} loading="lazy" className="h-full w-full object-cover" />
         ) : (
@@ -93,14 +95,10 @@ export function ThemeCard({ theme, selected = false, onSelect, footer }) {
         <p className="line-clamp-2 text-sm font-medium text-slate-900">{theme.name}</p>
         <div className={`mt-auto grid gap-2 ${onSelect ? 'grid-cols-2' : 'grid-cols-1'}`}>
           {theme.demo_url ? (
-            <a
-              href={theme.demo_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-slate-300 px-2 py-1.5 text-center text-xs font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Lihat Demo
-            </a>
+            <ThemeDemoButton
+              theme={theme}
+              className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-center text-xs font-medium text-slate-700 hover:bg-slate-50"
+            />
           ) : (
             <span />
           )}
