@@ -16,7 +16,7 @@ function readCollapsed() {
   }
 }
 
-export default function DashboardLayout({ navItems, brandTitle, brandSubtitle, headerRight, profileHref }) {
+export default function DashboardLayout({ navItems, brandTitle, brandSubtitle, headerRight, profileHref, topContent }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   // Desktop-only: shrink the sidebar to an icon rail. Mobile keeps the slide-in drawer.
   const [collapsed, setCollapsed] = useState(readCollapsed)
@@ -338,6 +338,8 @@ export default function DashboardLayout({ navItems, brandTitle, brandSubtitle, h
           </div>
 
           <div className="px-4 py-6 sm:px-6 md:px-8 md:py-8">
+            {/* Konten yang tampil di atas semua halaman role ini (mis. banner ganti password client). */}
+            {topContent}
             <PageTransition refreshKey={refreshKey}>
               <Outlet context={{ setPageHeader }} />
             </PageTransition>

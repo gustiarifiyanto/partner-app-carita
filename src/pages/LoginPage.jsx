@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import ForgotPasswordModal from "../components/ForgotPasswordModal";
 import welcomeAnimation from "../assets/lottie/welcome_partner.json";
 import logo from "../assets/logo/logo_carita_v4.png";
 import LottiePlayer from "../components/LottiePlayer";
 import { useAuth } from "../hooks/useAuth";
-import { homePathForRole } from "../lib/roles";
+import { homePathForRole, redirectPathForRole } from "../lib/roles";
 import { clientLandingPath } from "../lib/orderLink";
 import { useToast } from "../hooks/useToast";
 
@@ -46,6 +46,8 @@ export default function LoginPage() {
   const { user, token, loading, login } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from;
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -53,7 +55,12 @@ export default function LoginPage() {
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   if (!loading && token && user) {
-    return <Navigate to={homePathForRole(user.role)} replace />;
+    return (
+      <Navigate
+        to={redirectPathForRole(from, user.role) ?? homePathForRole(user.role)}
+        replace
+      />
+    );
   }
 
   const handleChange = (field) => (e) => {
@@ -69,9 +76,10 @@ export default function LoginPage() {
       const loggedInUser = await login(form.email, form.password);
       toast.welcome("Login berhasil.", "Selamat datang di Carita Studio!");
       navigate(
-        loggedInUser.role === "client"
-          ? clientLandingPath()
-          : homePathForRole(loggedInUser.role),
+        redirectPathForRole(from, loggedInUser.role) ??
+          (loggedInUser.role === "client"
+            ? clientLandingPath()
+            : homePathForRole(loggedInUser.role)),
         {
           replace: true,
         },

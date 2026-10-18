@@ -1,5 +1,6 @@
 import DashboardLayout from '../DashboardLayout'
 import { CatalogIcon, DashboardIcon, InvitationIcon } from '../icons/NavIcons'
+import TemporaryPasswordPrompt from './TemporaryPasswordPrompt'
 
 export default function ClientLayout() {
   const navItems = [
@@ -23,5 +24,12 @@ export default function ClientLayout() {
     },
   ]
 
-  return <DashboardLayout navItems={navItems} brandTitle="Carita Studio" brandSubtitle="Client Area" />
+  return (
+    <DashboardLayout
+      navItems={navItems}
+      brandTitle="Carita Studio"
+      brandSubtitle="Client Area"
+      topContent={<TemporaryPasswordPrompt />}
+    />
+  )
 }

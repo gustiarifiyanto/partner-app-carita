@@ -1,7 +1,6 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import ChangePasswordModal from '../../components/ChangePasswordModal'
 import EmailVerificationBanner from '../../components/client/EmailVerificationBanner'
+import InvitationDataNotice from '../../components/client/InvitationDataNotice'
 import ListSkeleton from '../../components/ListSkeleton'
 import { OrderTimeline } from '../../components/orders/OrderDetailParts'
 import Pagination from '../../components/Pagination'
@@ -13,36 +12,15 @@ import { buildWaLink } from '../../lib/contact'
 import { formatCurrency, formatDate } from '../../lib/format'
 
 export default function ClientDashboardPage() {
-  const { user, updateUser } = useAuth()
+  const { user } = useAuth()
   const firstName = (user?.client?.full_name || user?.name || '').split(' ')[0]
   usePageHeader('Pesanan Saya', `Halo ${firstName}, pantau status pesanan kamu di sini`)
 
   const { items, meta, loading, error, setFilters, refetch } = useApiList('/client/orders', { page: 1 })
-  const [showChangePassword, setShowChangePassword] = useState(false)
-  const mustChangePassword = Boolean(user?.must_change_password)
 
   return (
     <div className="space-y-6">
       <EmailVerificationBanner onVerified={refetch} />
-
-      {mustChangePassword && (
-        <div className="animate-fade-up flex flex-col gap-3 rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-semibold text-amber-900">Buat password baru dulu, yuk</p>
-            <p className="mt-0.5 text-sm text-amber-800">
-              Kamu masih memakai password sementara dari partner. Ganti dengan password pilihanmu sendiri supaya akun
-              kamu aman.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowChangePassword(true)}
-            className="shrink-0 rounded-lg bg-amber-900 px-4 py-2 text-sm font-semibold text-amber-50 hover:bg-amber-800"
-          >
-            Ganti Password
-          </button>
-        </div>
-      )}
 
       <div className="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
         {error && <p className="px-4 py-3 text-sm text-red-600">{error}</p>}
@@ -89,6 +67,7 @@ export default function ClientDashboardPage() {
                     </div>
                   </div>
                   <OrderTimeline order={order} embedded />
+                  <InvitationDataNotice order={order} />
                   <div className="flex justify-end">
                     <Link
                       to={`/client/orders/${order.id}`}
@@ -128,13 +107,6 @@ export default function ClientDashboardPage() {
         </a>
       </p>
 
-      <ChangePasswordModal
-        open={showChangePassword}
-        onClose={() => setShowChangePassword(false)}
-        onSuccess={() => updateUser({ must_change_password: false })}
-        title="Buat Password Baru"
-        oldPasswordLabel="Password Sementara (dari partner)"
-      />
     </div>
   )
 }

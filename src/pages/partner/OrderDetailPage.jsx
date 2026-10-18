@@ -13,6 +13,7 @@ import ClientAccessShareModal from '../../components/partner/ClientAccessShareMo
 import { PaymentHistory } from '../../components/payments/PaymentParts'
 import PaymentUploadForm from '../../components/payments/PaymentUploadForm'
 import ClientAccountCard from '../../components/partner/ClientAccountCard'
+import InvitationReminderCard from '../../components/orders/InvitationReminderCard'
 import StatusBadge from '../../components/StatusBadge'
 import { useAuth } from '../../hooks/useAuth'
 import { usePageHeader } from '../../hooks/usePageHeader'
@@ -21,10 +22,11 @@ import { formatCurrency, formatDate } from '../../lib/format'
 
 export default function OrderDetailPage() {
   const { id } = useParams()
-  const { refreshNewOrderAlerts } = useAuth()
+  const { user, refreshNewOrderAlerts } = useAuth()
   const [order, setOrder] = useState(null)
   const [clientAccount, setClientAccount] = useState(null)
   const [sharedAccount, setSharedAccount] = useState(null)
+  const [reminder, setReminder] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -38,6 +40,7 @@ export default function OrderDetailPage() {
       .then(({ data }) => {
         setOrder(data.data)
         setClientAccount(data.client_account ?? null)
+        setReminder(data.invitation_reminder ?? null)
         // Membuka detail menandai notifikasi "Order Baru" order ini sudah dilihat.
         refreshNewOrderAlerts()
       })
@@ -102,6 +105,14 @@ export default function OrderDetailPage() {
       </section>
 
       <OrderTimeline order={order} />
+
+      <InvitationReminderCard
+        reminder={reminder}
+        endpoint={`/partner/orders/${order.id}/invitation/remind`}
+        orderNumber={order.order_number}
+        senderName={user?.partner?.company_name || user?.name}
+        onUpdated={setReminder}
+      />
 
       {order.source !== 'client' && <PartnerPaymentPanel order={order} onUploaded={load} />}
 

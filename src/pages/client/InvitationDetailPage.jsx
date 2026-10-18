@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ConfirmDialog from '../../components/ConfirmDialog'
-import FormField from '../../components/FormField'
 import InvitationDataBadge from '../../components/InvitationDataBadge'
 import ListSkeleton from '../../components/ListSkeleton'
 import ThemeDemoButton from '../../components/catalog/ThemeDemoButton'
+import InvitationForm from '../../components/invitation/InvitationForm'
 import { useAuth } from '../../hooks/useAuth'
 import { usePageHeader } from '../../hooks/usePageHeader'
 import { useToast } from '../../hooks/useToast'
@@ -12,25 +12,7 @@ import api from '../../lib/api'
 import { clientOrderStatus } from '../../lib/clientOrderStatus'
 import { buildWaLink } from '../../lib/contact'
 import { formatDate, formatDateTime } from '../../lib/format'
-import { fieldClass } from '../../lib/formStyles'
-import { EMPTY_EVENT } from '../../lib/invitationStatus'
-
-const PERSON_FIELDS = [
-  ['full_name', 'Nama Lengkap', 'Mis. Budi Santoso, S.Kom.'],
-  ['nickname', 'Nama Panggilan', 'Mis. Budi'],
-  ['father_name', 'Nama Ayah', 'Mis. Bapak Santoso'],
-  ['mother_name', 'Nama Ibu', 'Mis. Ibu Sari'],
-]
-
-// Ambil isi form dari respons API (objek kosong dari server bisa berupa {}).
-function toForm(data) {
-  return {
-    groom: { ...data.groom },
-    bride: { ...data.bride },
-    events: data.events?.length ? data.events.map((e) => ({ ...EMPTY_EVENT, ...e })) : [{ ...EMPTY_EVENT, name: 'Akad Nikah' }],
-    notes: data.notes ?? '',
-  }
-}
+import { toInvitationForm } from '../../lib/invitationStatus'
 
 export default function ClientInvitationDetailPage() {
   const { id } = useParams()
@@ -47,7 +29,7 @@ export default function ClientInvitationDetailPage() {
 
   const apply = (next) => {
     setData(next)
-    setForm(toForm(next))
+    setForm(toInvitationForm(next))
   }
 
   useEffect(() => {
@@ -175,7 +157,9 @@ export default function ClientInvitationDetailPage() {
             <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${status.className}`}>
               {status.label}
             </span>
-            {order.status !== 'completed' && <InvitationDataBadge status={data.data_status} />}
+            {(order.status !== 'completed' || data.data_status === 'revision') && (
+              <InvitationDataBadge status={data.data_status} />
+            )}
           </div>
           <p className="text-lg font-semibold text-slate-900">{order.theme?.name ?? order.product_service_name}</p>
           <p className="text-sm text-slate-500">
@@ -216,7 +200,9 @@ export default function ClientInvitationDetailPage() {
           <div className="text-sm text-violet-900">
             <p className="font-semibold">Mode: Admin Editing</p>
             <p className="mt-0.5 text-violet-800">
-              {data.submitted_at
+              {data.data_status === 'revision'
+                ? 'Admin membuka revisi data undangan kamu. Ubah data yang perlu direvisi lalu tekan "Kirim Data" lagi.'
+                : data.submitted_at
                 ? `Data terkirim ${formatDateTime(data.submitted_at)} dan sedang dikerjakan admin. Butuh perubahan? Hubungi admin untuk request revisi.`
                 : 'Undangan dikerjakan oleh admin Carita. Lengkapi data di bawah lalu tekan "Kirim Data" supaya undangan bisa mulai dikerjakan.'}
             </p>
@@ -301,142 +287,5 @@ function ModeChooser({ onChooseAdmin }) {
         </div>
       </div>
     </section>
-  )
-}
-
-function InvitationForm({ form, setForm, errors, readOnly, saving, lastSaved, onSaveDraft, onSubmit }) {
-  const setPerson = (person, field) => (e) =>
-    setForm((prev) => ({ ...prev, [person]: { ...prev[person], [field]: e.target.value } }))
-
-  const setEvent = (index, field) => (e) =>
-    setForm((prev) => ({
-      ...prev,
-      events: prev.events.map((event, i) => (i === index ? { ...event, [field]: e.target.value } : event)),
-    }))
-
-  const addEvent = () =>
-    setForm((prev) => ({ ...prev, events: [...prev.events, { ...EMPTY_EVENT, name: prev.events.length ? 'Resepsi' : 'Akad Nikah' }] }))
-
-  const removeEvent = (index) => setForm((prev) => ({ ...prev, events: prev.events.filter((_, i) => i !== index) }))
-
-  return (
-    <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-      <fieldset disabled={readOnly || saving} className="space-y-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {[
-            ['groom', 'Mempelai Pria', '🤵'],
-            ['bride', 'Mempelai Wanita', '👰'],
-          ].map(([person, title, emoji]) => (
-            <section key={person} className="animate-fade-up space-y-3 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-              <h3 className="text-base font-semibold text-slate-900">
-                {emoji} {title}
-              </h3>
-              {PERSON_FIELDS.map(([field, label, placeholder]) => (
-                <FormField
-                  key={field}
-                  label={`${label}${['full_name', 'nickname'].includes(field) ? ' *' : ''}`}
-                  error={errors[`${person}.${field}`]}
-                >
-                  <input
-                    value={form[person][field] ?? ''}
-                    onChange={setPerson(person, field)}
-                    placeholder={placeholder}
-                    className={fieldClass(errors[`${person}.${field}`])}
-                  />
-                </FormField>
-              ))}
-            </section>
-          ))}
-        </div>
-
-        <section className="animate-fade-up space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-base font-semibold text-slate-900">📅 Acara</h3>
-            {!readOnly && form.events.length < 10 && (
-              <button type="button" onClick={addEvent} className="text-sm font-semibold text-violet-600 hover:underline">
-                + Tambah Acara
-              </button>
-            )}
-          </div>
-          {errors.events && <p className="text-xs text-red-600">{[].concat(errors.events)[0]}</p>}
-
-          {form.events.map((event, index) => {
-            const err = (field) => errors[`events.${index}.${field}`]
-            return (
-              <div key={index} className="space-y-3 rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-slate-700">Acara {index + 1}</p>
-                  {!readOnly && form.events.length > 1 && (
-                    <button type="button" onClick={() => removeEvent(index)} className="text-xs font-medium text-red-600 hover:underline">
-                      Hapus
-                    </button>
-                  )}
-                </div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <FormField label="Nama Acara *" error={err('name')}>
-                    <input value={event.name} onChange={setEvent(index, 'name')} placeholder="Akad Nikah / Resepsi" className={fieldClass(err('name'))} />
-                  </FormField>
-                  <FormField label="Tanggal *" error={err('date')}>
-                    <input type="date" value={event.date} onChange={setEvent(index, 'date')} className={fieldClass(err('date'))} />
-                  </FormField>
-                  <FormField label="Jam Mulai *" error={err('time_start')}>
-                    <input type="time" value={event.time_start} onChange={setEvent(index, 'time_start')} className={fieldClass(err('time_start'))} />
-                  </FormField>
-                  <FormField label="Jam Selesai" error={err('time_end')} hint='Boleh diisi "Selesai"'>
-                    <input value={event.time_end} onChange={setEvent(index, 'time_end')} placeholder="11:00 / Selesai" className={fieldClass(err('time_end'))} />
-                  </FormField>
-                  <FormField label="Nama Tempat *" error={err('venue_name')}>
-                    <input value={event.venue_name} onChange={setEvent(index, 'venue_name')} placeholder="Mis. Masjid Agung" className={fieldClass(err('venue_name'))} />
-                  </FormField>
-                  <FormField label="Link Google Maps" error={err('maps_url')}>
-                    <input type="url" value={event.maps_url} onChange={setEvent(index, 'maps_url')} placeholder="https://maps.app.goo.gl/..." className={fieldClass(err('maps_url'))} />
-                  </FormField>
-                </div>
-                <FormField label="Alamat Lengkap *" error={err('address')}>
-                  <textarea rows={2} value={event.address} onChange={setEvent(index, 'address')} className={fieldClass(err('address'))} />
-                </FormField>
-              </div>
-            )
-          })}
-        </section>
-
-        <section className="animate-fade-up rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <FormField label="Catatan untuk Admin" error={errors.notes} hint="Mis. warna favorit, kutipan ayat, atau permintaan khusus">
-            <textarea
-              rows={3}
-              value={form.notes}
-              onChange={(e) => setForm((prev) => ({ ...prev, notes: e.target.value }))}
-              className={fieldClass(errors.notes)}
-            />
-          </FormField>
-        </section>
-      </fieldset>
-
-      {!readOnly && (
-        <div className="sticky bottom-3 z-10 flex flex-col gap-3 rounded-2xl bg-white/95 p-4 shadow-lg ring-1 ring-slate-200 backdrop-blur sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-slate-500">
-            {lastSaved ? `Draft terakhir disimpan ${formatDateTime(lastSaved)}` : 'Kolom bertanda * wajib diisi sebelum kirim.'}
-          </p>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={onSaveDraft}
-              disabled={saving}
-              className="flex-1 rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-100 disabled:opacity-60 sm:flex-none"
-            >
-              {saving ? 'Menyimpan...' : 'Simpan Draft'}
-            </button>
-            <button
-              type="button"
-              onClick={onSubmit}
-              disabled={saving}
-              className="flex-1 rounded-lg bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-60 sm:flex-none"
-            >
-              Kirim Data
-            </button>
-          </div>
-        </div>
-      )}
-    </form>
   )
 }

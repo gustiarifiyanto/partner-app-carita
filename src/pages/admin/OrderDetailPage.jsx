@@ -24,6 +24,8 @@ import { useToast } from '../../hooks/useToast'
 import { ORDER_SOURCES } from '../../lib/orderSources'
 import PaymentReviewActions from '../../components/admin/PaymentReviewActions'
 import InvitationDataPanel from '../../components/admin/InvitationDataPanel'
+import InvitationLinkPanel from '../../components/admin/InvitationLinkPanel'
+import InvitationReminderCard from '../../components/orders/InvitationReminderCard'
 import { PaymentHistory } from '../../components/payments/PaymentParts'
 
 const EDIT_FIELDS = [
@@ -41,6 +43,8 @@ export default function OrderDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams()
   const [order, setOrder] = useState(null)
+  const [reminder, setReminder] = useState(null)
+  const [invitationLink, setInvitationLink] = useState(null)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [actionError, setActionError] = useState('')
@@ -66,6 +70,8 @@ export default function OrderDetailPage() {
       .then(({ data }) => {
         setOrder(data.data)
         setForm(data.data)
+        setReminder(data.invitation_reminder ?? null)
+        setInvitationLink(data.invitation_link ?? null)
       })
       .catch((err) => setLoadError(err.response?.data?.message || 'Gagal memuat data order.'))
       .finally(() => setLoading(false))
@@ -239,6 +245,22 @@ export default function OrderDetailPage() {
       )}
 
       <OrderTimeline order={order} />
+
+      <InvitationReminderCard
+        reminder={reminder}
+        endpoint={`/admin/orders/${order.id}/invitation/remind`}
+        orderNumber={order.order_number}
+        senderName="Admin Carita Studio"
+        onUpdated={setReminder}
+      />
+
+      <InvitationLinkPanel
+        key={invitationLink?.url ?? 'new'}
+        order={order}
+        link={invitationLink}
+        onSaved={() => load()}
+        onUpdated={setInvitationLink}
+      />
 
       <InvitationDataPanel order={order} onChanged={load} />
 

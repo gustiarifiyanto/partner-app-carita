@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import InvitationDataNotice from '../../components/client/InvitationDataNotice'
 import ConfirmDialog from '../../components/ConfirmDialog'
+import InvitationDataBadge from '../../components/InvitationDataBadge'
 import ListSkeleton from '../../components/ListSkeleton'
 import { OrderTimeline } from '../../components/orders/OrderDetailParts'
 import { PaymentHistory, PaymentStatusBadge } from '../../components/payments/PaymentParts'
@@ -12,6 +14,7 @@ import api from '../../lib/api'
 import { clientOrderStatus } from '../../lib/clientOrderStatus'
 import { buildWaLink } from '../../lib/contact'
 import { formatCurrency, formatDate } from '../../lib/format'
+import { needsInvitationData } from '../../lib/invitationStatus'
 
 export default function ClientOrderDetailPage() {
   const { id } = useParams()
@@ -136,19 +139,29 @@ export default function ClientOrderDetailPage() {
 
       <OrderTimeline order={order} />
 
-      {order.package_id && order.status !== 'cancelled' && (
-        <Link
-          to={`/client/undangan/${order.id}`}
-          className="animate-fade-up group flex items-center justify-between gap-3 rounded-2xl bg-violet-50 p-5 ring-1 ring-violet-200 transition hover:bg-violet-100"
-        >
-          <div>
-            <p className="text-sm font-semibold text-violet-900">💌 Data Undangan</p>
-            <p className="mt-0.5 text-sm text-violet-800">
-              Isi data mempelai & acara supaya undangan bisa dikerjakan.
-            </p>
-          </div>
-          <span className="shrink-0 text-sm font-semibold text-violet-700 group-hover:underline">Buka →</span>
-        </Link>
+      {needsInvitationData(order) ? (
+        <InvitationDataNotice order={order} className="animate-fade-up" />
+      ) : (
+        order.package_id &&
+        order.status !== 'cancelled' && (
+          <Link
+            to={`/client/undangan/${order.id}`}
+            className="animate-fade-up group flex items-center justify-between gap-3 rounded-2xl bg-violet-50 p-5 ring-1 ring-violet-200 transition hover:bg-violet-100"
+          >
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="text-sm font-semibold text-violet-900">💌 Data Undangan</p>
+                <InvitationDataBadge status={order.invitation_data_status} />
+              </div>
+              <p className="mt-0.5 text-sm text-violet-800">
+                {order.invitation_data_status === 'submitted'
+                  ? 'Data mempelai & acara sudah kami terima. Lihat data yang kamu kirim.'
+                  : 'Lihat data mempelai & acara undangan kamu.'}
+              </p>
+            </div>
+            <span className="shrink-0 text-sm font-semibold text-violet-700 group-hover:underline">Buka →</span>
+          </Link>
+        )
       )}
 
       <section className="animate-fade-up space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
