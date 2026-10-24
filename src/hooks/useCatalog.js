@@ -3,7 +3,14 @@ import api from '../lib/api'
 
 // Paket & tema aktif dari API katalog publik.
 export function useCatalog(enabled = true) {
-  const [state, setState] = useState({ packages: [], themes: [], categories: {}, loading: true, error: '' })
+  const [state, setState] = useState({
+    packages: [],
+    themes: [],
+    categories: {},
+    selfEditingPrice: 0,
+    loading: true,
+    error: '',
+  })
 
   useEffect(() => {
     if (!enabled) return undefined
@@ -16,6 +23,7 @@ export function useCatalog(enabled = true) {
           packages: pkgRes.data.data,
           themes: themeRes.data.data,
           categories: themeRes.data.meta?.categories || {},
+          selfEditingPrice: Number(themeRes.data.meta?.self_editing_price ?? 0),
           loading: false,
           error: '',
         })

@@ -84,7 +84,12 @@ export function ThemeCard({ theme, selected = false, onSelect, footer }) {
         selected ? 'ring-2 ring-violet-500' : 'ring-slate-200 hover:shadow-md'
       } ${theme.is_active === false ? 'opacity-60' : ''}`}
     >
-      <div className="aspect-[3/4] overflow-hidden rounded-t-xl bg-slate-100">
+      <div className="relative aspect-[3/4] overflow-hidden rounded-t-xl bg-slate-100">
+        {theme.offers_self_editing && (
+          <span className="absolute top-2 left-2 rounded-full bg-fuchsia-600/90 px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+            ✏️ Self Editing
+          </span>
+        )}
         {theme.thumbnail ? (
           <img src={theme.thumbnail} alt={theme.name} loading="lazy" className="h-full w-full object-cover" />
         ) : (

@@ -145,13 +145,13 @@ export default function ClientOrderDetailPage() {
         order.package_id &&
         order.status !== 'cancelled' && (
           <Link
-            to={`/client/undangan/${order.id}`}
+            to={order.invitation_editing_mode === 'self' ? `/client/self-editing/${order.id}` : `/client/undangan/${order.id}`}
             className="animate-fade-up group flex items-center justify-between gap-3 rounded-2xl bg-violet-50 p-5 ring-1 ring-violet-200 transition hover:bg-violet-100"
           >
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <p className="text-sm font-semibold text-violet-900">💌 Data Undangan</p>
-                <InvitationDataBadge status={order.invitation_data_status} />
+                <InvitationDataBadge status={order.invitation_data_status} mode={order.invitation_editing_mode} />
               </div>
               <p className="mt-0.5 text-sm text-violet-800">
                 {order.invitation_data_status === 'submitted'

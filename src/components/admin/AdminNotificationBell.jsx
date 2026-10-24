@@ -21,7 +21,14 @@ function timeAgo(value) {
   return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short' }).format(new Date(value))
 }
 
-// The three kinds of things waiting on an admin, each with its own column.
+const INVITATION_KIND = {
+  self_submit: 'Self Editing · ajukan terbit',
+  self_revision: 'Self Editing · revisi setelah terbit',
+  data_submitted: 'Data undangan dikirim',
+  mode_switch: 'Minta pindah ke Admin Editing',
+}
+
+// The kinds of things waiting on an admin, each with its own column.
 const COLUMNS = [
   {
     key: 'new_partners',
@@ -79,6 +86,23 @@ const COLUMNS = [
     }),
   },
   {
+    key: 'invitation_requests',
+    title: 'Undangan',
+    empty: 'Tidak ada data atau pengajuan undangan yang menunggu.',
+    accent: 'bg-fuchsia-100 text-fuchsia-600',
+    countClass: 'bg-fuchsia-500',
+    seeAll: '/admin/orders',
+    icon: 'M21.75 9v.906a2.25 2.25 0 0 1-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 0 0 1.183 1.981l6.478 3.488m8.839 2.51-4.66-2.51m0 0-1.023-.55a2.25 2.25 0 0 0-2.134 0l-1.022.55m0 0-4.661 2.51m16.5 1.615a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V8.844a2.25 2.25 0 0 1 1.183-1.981l7.5-4.039a2.25 2.25 0 0 1 2.134 0l7.5 4.039a2.25 2.25 0 0 1 1.183 1.98V19.5Z',
+    toItem: (request) => ({
+      id: request.order_id,
+      partner: request.partner,
+      title: `${request.order_number ?? '-'} · ${request.customer_name ?? '-'}`,
+      subtitle: INVITATION_KIND[request.kind] ?? 'Undangan',
+      time: request.requested_at,
+      href: `/admin/orders/${request.order_id}`,
+    }),
+  },
+  {
     key: 'payment_requests',
     title: 'Pengajuan Komisi',
     empty: 'Tidak ada pengajuan pencairan.',
@@ -104,6 +128,7 @@ export default function AdminNotificationBell() {
     newPartnerOrders,
     newCommissions,
     newClientPayments,
+    newInvitationRequests,
     refreshNewPartners,
     refreshNewPartnerOrders,
     refreshNewCommissions,
@@ -115,7 +140,12 @@ export default function AdminNotificationBell() {
   const containerRef = useRef(null)
   const panelRef = useRef(null)
 
-  const total = (newPartners || 0) + (newPartnerOrders || 0) + (newCommissions || 0) + (newClientPayments || 0)
+  const total =
+    (newPartners || 0) +
+    (newPartnerOrders || 0) +
+    (newCommissions || 0) +
+    (newClientPayments || 0) +
+    (newInvitationRequests || 0)
 
   const loadAlerts = useCallback(async () => {
     try {
@@ -181,7 +211,7 @@ export default function AdminNotificationBell() {
       </button>
 
       {open && (
-        <HeaderPanel anchorRef={containerRef} panelRef={panelRef} maxWidth={1040}>
+        <HeaderPanel anchorRef={containerRef} panelRef={panelRef} maxWidth={1280}>
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-slate-900">Notifikasi</p>
@@ -213,7 +243,7 @@ export default function AdminNotificationBell() {
             />
           </div>
 
-          <div className="grid md:grid-cols-4 md:divide-x md:divide-slate-100">
+          <div className="grid md:grid-cols-5 md:divide-x md:divide-slate-100">
             {COLUMNS.map((col, colIndex) => (
               <AlertColumn
                 key={col.key}

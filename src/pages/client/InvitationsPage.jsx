@@ -110,7 +110,7 @@ export default function ClientInvitationsPage() {
                   {done ? (
                     <span className="text-xs font-medium text-emerald-700">Undangan sudah jadi 🎉</span>
                   ) : (
-                    <InvitationDataBadge status={item.data_status} />
+                    <InvitationDataBadge status={item.data_status} mode={item.editing_mode} />
                   )}
                   <span className="text-xs font-semibold text-violet-600 group-hover:underline">
                     {done ? 'Lihat' : (NEXT_STEP[item.data_status] ?? 'Buka')} →

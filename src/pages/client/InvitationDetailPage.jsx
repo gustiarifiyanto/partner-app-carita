@@ -158,7 +158,7 @@ export default function ClientInvitationDetailPage() {
               {status.label}
             </span>
             {(order.status !== 'completed' || data.data_status === 'revision') && (
-              <InvitationDataBadge status={data.data_status} />
+              <InvitationDataBadge status={data.data_status} mode={data.editing_mode} />
             )}
           </div>
           <p className="text-lg font-semibold text-slate-900">{order.theme?.name ?? order.product_service_name}</p>
@@ -194,6 +194,19 @@ export default function ClientInvitationDetailPage() {
       )}
 
       {data.can_choose_mode && <ModeChooser onChooseAdmin={() => setConfirm('mode')} />}
+
+      {data.editing_mode === 'self' && (
+        <Link
+          to={`/client/self-editing/${order.id}`}
+          className="animate-fade-up group flex items-center justify-between gap-3 rounded-2xl bg-fuchsia-50 p-5 ring-1 ring-fuchsia-200 transition hover:bg-fuchsia-100"
+        >
+          <div>
+            <p className="text-sm font-semibold text-fuchsia-900">✏️ Mode: Self Editing</p>
+            <p className="mt-0.5 text-sm text-fuchsia-800">Undangan ini kamu edit sendiri di editor Self Editing.</p>
+          </div>
+          <span className="shrink-0 text-sm font-semibold text-fuchsia-700 group-hover:underline">Buka Editor →</span>
+        </Link>
+      )}
 
       {adminMode && (
         <section className="animate-fade-up flex flex-col gap-3 rounded-2xl bg-violet-50 p-5 ring-1 ring-violet-200 sm:flex-row sm:items-center sm:justify-between">
@@ -275,14 +288,11 @@ function ModeChooser({ onChooseAdmin }) {
           </p>
           <span className="mt-3 inline-block text-sm font-semibold text-violet-600 group-hover:underline">Pilih →</span>
         </button>
-        <div className="relative rounded-xl bg-slate-50 p-4 opacity-70 ring-1 ring-slate-200" aria-disabled="true">
-          <span className="absolute top-3 right-3 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
-            Segera Hadir
-          </span>
+        <div className="rounded-xl bg-slate-50 p-4 opacity-80 ring-1 ring-slate-200" aria-disabled="true">
           <p className="text-2xl">✏️</p>
           <p className="mt-2 font-semibold text-slate-900">Self Editing</p>
           <p className="mt-1 text-sm text-slate-600">
-            Edit sendiri teks, foto, dan susunan undangan langsung dari dashboard. Fitur ini sedang kami siapkan.
+            Self Editing adalah add-on yang dipilih saat membuat pesanan, jadi tidak tersedia untuk pesanan ini.
           </p>
         </div>
       </div>

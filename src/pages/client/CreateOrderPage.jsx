@@ -22,6 +22,8 @@ export default function CreateOrderPage() {
   const [referralCode, setReferralCode] = useState(() => (searchParams.get('ref') || '').toUpperCase())
   const [referral, setReferral] = useState(REFERRAL_IDLE)
   const [notes, setNotes] = useState('')
+  const [selfEditing, setSelfEditing] = useState(false)
+  const [selfHint, setSelfHint] = useState('')
   const [errors, setErrors] = useState({})
   const [generalError, setGeneralError] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -70,6 +72,30 @@ export default function CreateOrderPage() {
     [catalog.packages, selection.package_id],
   )
 
+  const selectedTheme = useMemo(
+    () => catalog.themes.find((t) => String(t.id) === String(selection.theme_id)),
+    [catalog.themes, selection.theme_id],
+  )
+  // Add-on Self Editing hanya untuk tema yang sudah disiapkan admin (pemetaan WordPress / template).
+  const selfAvailable = Boolean(selectedTheme?.offers_self_editing)
+  const withSelf = selfEditing && selfAvailable
+  const anySelfTheme = catalog.themes.some((t) => t.offers_self_editing)
+  const chooseSelf = () => {
+    if (selfAvailable) {
+      setSelfEditing(true)
+      setSelfHint('')
+      return
+    }
+    setSelfHint(
+      !anySelfTheme
+        ? 'Self Editing belum tersedia untuk tema mana pun. Template-nya sedang disiapkan admin.'
+        : selection.theme_id
+          ? 'Tema yang kamu pilih belum mendukung Self Editing. Pilih tema bertanda ✏️ Self Editing.'
+          : 'Pilih tema bertanda ✏️ Self Editing terlebih dahulu.',
+    )
+  }
+  const total = selectedPackage ? Number(selectedPackage.price) + (withSelf ? catalog.selfEditingPrice : 0) : null
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setErrors({})
@@ -81,6 +107,7 @@ export default function CreateOrderPage() {
         ...selection,
         referral_code: trimmedCode || null,
         notes: notes.trim() || null,
+        self_editing: withSelf,
       })
       toast.success('Pesanan berhasil dibuat.')
       navigate(`/client/orders/${data.data.id}`, { replace: true })
@@ -148,6 +175,39 @@ export default function CreateOrderPage() {
           )}
         </FormField>
 
+        <div>
+          <h2 className="mb-2 text-sm font-semibold text-slate-900">Cara Pengerjaan</h2>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <ModeOption
+              active={!withSelf}
+              onClick={() => setSelfEditing(false)}
+              emoji="🧑‍💻"
+              title="Admin Editing"
+              price="Termasuk paket"
+              description="Kamu isi data mempelai & acara, admin Carita yang membuatkan undangannya."
+            />
+            <ModeOption
+              active={withSelf}
+              unavailable={!selfAvailable}
+              onClick={chooseSelf}
+              emoji="✏️"
+              title="Self Editing"
+              price={`+${formatCurrency(catalog.selfEditingPrice)}`}
+              description={
+                selfAvailable
+                  ? 'Edit sendiri teks, foto & acara dengan preview langsung. Revisi mandiri sampai 5x setelah terbit.'
+                  : !anySelfTheme
+                    ? 'Segera tersedia. Template Self Editing sedang disiapkan.'
+                    : selection.theme_id
+                      ? 'Tema ini belum mendukung Self Editing.'
+                      : 'Pilih tema bertanda ✏️ Self Editing.'
+              }
+            />
+          </div>
+          {selfHint && !withSelf && <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">{selfHint}</p>}
+          {errors.self_editing && <p className="mt-1 text-xs text-red-600">{errors.self_editing[0]}</p>}
+        </div>
+
         <FormField label="Catatan (opsional)" error={errors.notes}>
           <textarea
             rows={3}
@@ -171,6 +231,12 @@ export default function CreateOrderPage() {
             <dt className="text-slate-500">Masa aktif</dt>
             <dd className="text-right text-slate-900">{selectedPackage?.validity_label || '-'}</dd>
           </div>
+          {withSelf && (
+            <div className="flex justify-between gap-3">
+              <dt className="text-slate-500">Add-on Self Editing</dt>
+              <dd className="text-right text-slate-900">+{formatCurrency(catalog.selfEditingPrice)}</dd>
+            </div>
+          )}
           {referral.status === 'valid' && (
             <div className="flex justify-between gap-3">
               <dt className="text-slate-500">Referral</dt>
@@ -180,7 +246,7 @@ export default function CreateOrderPage() {
           <div className="flex justify-between gap-3 border-t border-slate-100 pt-3">
             <dt className="font-medium text-slate-900">Total</dt>
             <dd className="text-lg font-bold text-slate-900">
-              {selectedPackage ? formatCurrency(selectedPackage.price) : '-'}
+              {total !== null ? formatCurrency(total) : '-'}
             </dd>
           </div>
         </dl>
@@ -198,5 +264,30 @@ export default function CreateOrderPage() {
         </button>
       </aside>
     </form>
+  )
+}
+
+// `unavailable` tetap bisa diklik supaya client mendapat penjelasan kenapa belum bisa dipilih.
+function ModeOption({ active, unavailable = false, onClick, emoji, title, price, description }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-disabled={unavailable}
+      className={`rounded-xl p-4 text-left transition ${
+        active
+          ? 'bg-violet-50 ring-2 ring-violet-500'
+          : unavailable
+            ? 'bg-slate-50 opacity-70 ring-1 ring-slate-200'
+            : 'ring-1 ring-slate-200 hover:ring-violet-300'
+      }`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-xl">{emoji}</p>
+        <span className={`text-xs font-semibold ${active ? 'text-violet-700' : 'text-slate-500'}`}>{price}</span>
+      </div>
+      <p className="mt-1 text-sm font-semibold text-slate-900">{title}</p>
+      <p className="mt-0.5 text-xs leading-relaxed text-slate-600">{description}</p>
+    </button>
   )
 }

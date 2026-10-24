@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import PackageFormModal from '../../components/admin/PackageFormModal'
 import ThemeFormModal from '../../components/admin/ThemeFormModal'
+import ThemeTemplateModal from '../../components/admin/ThemeTemplateModal'
+import WordpressConnectionCard from '../../components/admin/WordpressConnectionCard'
 import { PackageCard, ThemeCard } from '../../components/catalog/CatalogCards'
 import SearchInput from '../../components/SearchInput'
 import SegmentedTabs from '../../components/SegmentedTabs'
@@ -34,6 +37,7 @@ export default function CatalogPage() {
   const [search, setSearch] = useState('')
   const [packageModal, setPackageModal] = useState(null) // { pkg } | null
   const [themeModal, setThemeModal] = useState(null) // { theme } | null
+  const [templateTheme, setTemplateTheme] = useState(null)
   const [modalKey, setModalKey] = useState(0)
   const [togglingId, setTogglingId] = useState(null)
 
@@ -157,6 +161,27 @@ export default function CatalogPage() {
       <div className="grid grid-cols-2 gap-1.5 border-t border-slate-100 pt-2.5">
         {editButton(() => openTheme(theme), 'py-1.5')}
         {toggleButton('themes', theme, 'px-1 py-1.5')}
+        <button
+          type="button"
+          onClick={() => setTemplateTheme(theme)}
+          className={`col-span-2 rounded-md border px-2.5 py-1.5 text-xs font-medium ${
+            theme.has_self_template
+              ? 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+              : 'border-dashed border-violet-300 text-violet-700 hover:bg-violet-50'
+          }`}
+        >
+          {theme.has_self_template ? '✓ Template Self Editing' : '+ Template Self Editing'}
+        </button>
+        <Link
+          to={`/admin/catalog/themes/${theme.id}/wordpress`}
+          className={`col-span-2 rounded-md border px-2.5 py-1.5 text-center text-xs font-medium ${
+            theme.has_wp_template
+              ? 'border-emerald-200 text-emerald-700 hover:bg-emerald-50'
+              : 'border-dashed border-indigo-300 text-indigo-700 hover:bg-indigo-50'
+          }`}
+        >
+          {theme.has_wp_template ? '✓ Pemetaan WordPress' : '+ Pemetaan WordPress'}
+        </Link>
       </div>
     </div>
   )
@@ -206,6 +231,7 @@ export default function CatalogPage() {
         </section>
       ) : (
         <section className="animate-fade-up space-y-4">
+          <WordpressConnectionCard />
           <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 lg:flex-row lg:items-center">
             <div className="lg:flex-1">
               <SearchInput value={search} onChange={setSearch} placeholder="Cari nama tema" />
@@ -275,6 +301,18 @@ export default function CatalogPage() {
           onClose={() => setPackageModal(null)}
           onSaved={() => {
             setPackageModal(null)
+            load()
+          }}
+        />
+      )}
+
+      {templateTheme && (
+        <ThemeTemplateModal
+          key={`template-${templateTheme.id}-${templateTheme.has_self_template}`}
+          theme={templateTheme}
+          onClose={() => setTemplateTheme(null)}
+          onSaved={() => {
+            setTemplateTheme(null)
             load()
           }}
         />

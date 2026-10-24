@@ -24,6 +24,7 @@ export default function InvitationForm({
   saveLabel = 'Simpan Draft',
   submitLabel = 'Kirim Data',
   hint = 'Kolom bertanda * wajib diisi sebelum kirim.',
+  extra = null,
 }) {
   const setPerson = (person, field) => (e) =>
     setForm((prev) => ({ ...prev, [person]: { ...prev[person], [field]: e.target.value } }))
@@ -119,6 +120,9 @@ export default function InvitationForm({
             )
           })}
         </section>
+
+        {/* Bagian tambahan, mis. konten Self Editing. */}
+        {extra}
 
         <section className="animate-fade-up rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
           <FormField label="Catatan untuk Admin" error={errors.notes} hint="Mis. warna favorit, kutipan ayat, atau permintaan khusus">

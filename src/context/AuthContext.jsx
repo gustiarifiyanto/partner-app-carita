@@ -17,6 +17,7 @@ export function AuthProvider({ children }) {
   const [newPartners, setNewPartners] = useState(0)
   const [newCommissions, setNewCommissions] = useState(0)
   const [newClientPayments, setNewClientPayments] = useState(0)
+  const [newInvitationRequests, setNewInvitationRequests] = useState(0)
 
   const persistSession = useCallback((nextToken, nextUser) => {
     setToken(nextToken)
@@ -145,6 +146,8 @@ export function AuthProvider({ children }) {
     try {
       const { data } = await api.get('/admin/orders', { params: { per_page: 1 } })
       setNewPartnerOrders(data.meta?.pending_partner_orders_count ?? 0)
+      // Kolom "Undangan" di lonceng ikut diambil dari request yang sama.
+      setNewInvitationRequests(data.meta?.pending_invitation_requests_count ?? 0)
     } catch {
       // Badge just won't update this cycle - not worth surfacing an error for.
     }
@@ -279,6 +282,7 @@ export function AuthProvider({ children }) {
         newCommissions,
         refreshNewCommissions,
         newClientPayments,
+        newInvitationRequests,
         refreshNewClientPayments,
       }}
     >

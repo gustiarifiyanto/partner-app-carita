@@ -17,6 +17,7 @@ import PaymentsPage from './pages/admin/PaymentsPage'
 import PartnerDetailPage from './pages/admin/PartnerDetailPage'
 import PartnersPage from './pages/admin/PartnersPage'
 import ReportsPage from './pages/admin/ReportsPage'
+import ThemeWordpressPage from './pages/admin/ThemeWordpressPage'
 import ClientCatalogPage from './pages/client/CatalogPage'
 import ClientDashboardPage from './pages/client/DashboardPage'
 import ClientRegisterPage from './pages/ClientRegisterPage'
@@ -24,6 +25,8 @@ import OrderEntryPage from './pages/OrderEntryPage'
 import ClientCreateOrderPage from './pages/client/CreateOrderPage'
 import ClientOrderDetailPage from './pages/client/OrderDetailPage'
 import ClientInvitationDetailPage from './pages/client/InvitationDetailPage'
+import ClientSelfEditingPage from './pages/client/SelfEditingPage'
+import ClientSelfEditorPage from './pages/client/SelfEditorPage'
 import ClientInvitationsPage from './pages/client/InvitationsPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -65,6 +68,7 @@ function App() {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="marketing-kit" element={<MarketingKitPage />} />
           <Route path="catalog" element={<CatalogPage />} />
+          <Route path="catalog/themes/:id/wordpress" element={<ThemeWordpressPage />} />
         </Route>
 
         <Route
@@ -127,6 +131,8 @@ function App() {
           <Route path="orders/:id" element={<ClientOrderDetailPage />} />
           <Route path="undangan" element={<ClientInvitationsPage />} />
           <Route path="undangan/:id" element={<ClientInvitationDetailPage />} />
+          <Route path="self-editing" element={<ClientSelfEditingPage />} />
+          <Route path="self-editing/:id" element={<ClientSelfEditorPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/login" replace />} />

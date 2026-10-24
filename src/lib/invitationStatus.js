@@ -29,6 +29,12 @@ export const EMPTY_EVENT = {
   maps_url: '',
 }
 
+// Label status untuk order Self Editing (client mengedit sendiri, bukan menunggu data untuk admin).
+export const SELF_EDITING_STATUS_LABEL = {
+  waiting_data: 'Draft Self Editing',
+  submitted: 'Menunggu Diterbitkan',
+}
+
 // Order katalog yang masih berjalan tapi client belum mengirim data undangan,
 // atau order selesai yang revisinya dibuka admin.
 export function needsInvitationData(order) {
@@ -45,6 +51,16 @@ export function toInvitationForm(data) {
     groom: { ...data.groom },
     bride: { ...data.bride },
     events: data.events?.length ? data.events.map((e) => ({ ...EMPTY_EVENT, ...e })) : [{ ...EMPTY_EVENT, name: 'Akad Nikah' }],
+    content: { ...EMPTY_CONTENT, ...data.content },
     notes: data.notes ?? '',
   }
+}
+
+// Teks tambahan Self Editing (sama dengan InvitationDetail::CONTENT_FIELDS).
+export const EMPTY_CONTENT = {
+  opening_text: '',
+  quote: '',
+  quote_source: '',
+  closing_text: '',
+  music_url: '',
 }

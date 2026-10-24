@@ -45,6 +45,7 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState(null)
   const [reminder, setReminder] = useState(null)
   const [invitationLink, setInvitationLink] = useState(null)
+  const [selfEdit, setSelfEdit] = useState(null) // Self Editing v2: preview WordPress + isian client
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
   const [actionError, setActionError] = useState('')
@@ -72,6 +73,7 @@ export default function OrderDetailPage() {
         setForm(data.data)
         setReminder(data.invitation_reminder ?? null)
         setInvitationLink(data.invitation_link ?? null)
+        setSelfEdit(data.self_edit ?? null)
       })
       .catch((err) => setLoadError(err.response?.data?.message || 'Gagal memuat data order.'))
       .finally(() => setLoading(false))
@@ -108,6 +110,7 @@ export default function OrderDetailPage() {
       await api.put(`/admin/orders/${id}/complete`)
       setConfirmAction(null)
       load()
+      refreshNewPartnerOrders()
       toast.success('Order berhasil diselesaikan, komisi telah dihitung.')
     } catch (err) {
       const message = err.response?.data?.message || 'Gagal menyelesaikan order.'
@@ -259,10 +262,22 @@ export default function OrderDetailPage() {
         order={order}
         link={invitationLink}
         onSaved={() => load()}
-        onUpdated={setInvitationLink}
+        onUpdated={(next) => {
+          setInvitationLink(next)
+          // Link terkirim = pengajuan undangan ditangani, badge lonceng ikut diperbarui.
+          load()
+          refreshNewPartnerOrders()
+        }}
       />
 
-      <InvitationDataPanel order={order} onChanged={load} />
+      <InvitationDataPanel
+        order={order}
+        selfEdit={selfEdit}
+        onChanged={() => {
+          load()
+          refreshNewPartnerOrders()
+        }}
+      />
 
       {payments.length > 0 && (
         <section className="animate-fade-up space-y-4 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:p-6">
